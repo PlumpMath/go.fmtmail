@@ -1,7 +1,7 @@
 // Package `fmtmail` builds on top of the standard library's `net/mail`, by
 // adding a single function:
 //
-//     func WriteMessage(w io.Writer, *mail.Message) error
+//     func WriteMessage(w io.Writer, msg *mail.Message) error
 //
 // ...Which outputs the message to `w`.
 //
