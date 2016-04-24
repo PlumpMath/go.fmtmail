@@ -8,50 +8,62 @@ import (
 	"strings"
 )
 
-// Write msg to w. An error will be returned if:
+// An email message
+type Message mail.Message
+
+// Write m to w. Can return an error because of:
 //
-// 1. The writer returns an error during the course of writing.
-// 2. The message contains characters that cannot be encoded
-//    (mainly non-ascii in the headers). Determining what escaping
-//    the standards allow and implementing it is still TODO
-func WriteMessage(w io.Writer, msg *mail.Message) (err error) {
-	for k, v := range msg.Header {
+// 1. An error reported by w
+// 2. An error encoding the message, e.g. unexpected non-ascii characters.
+func (m *Message) WriteTo(w io.Writer) (n int64, err error) {
+	var nThis64 int64
+	var nThis int
+	for k, v := range m.Header {
 		for i := range v {
-			err = writeHeader(w, k, v[i])
+			nThis64, err = writeHeader(w, k, v[i])
+			n += nThis64
 			if err != nil {
-				return err
+				return
 			}
 		}
 	}
-	_, err = w.Write([]byte("\r\n"))
+	nThis, err = w.Write([]byte("\r\n"))
+	n += int64(nThis)
 	if err != nil {
-		return err
+		return
 	}
-	_, err = io.Copy(w, msg.Body)
-	return err
+	nThis64, err = io.Copy(w, m.Body)
+	n += nThis64
+	return
 }
 
 // Write a single header key: value pair.
-func writeHeader(w io.Writer, k string, v string) (err error) {
-	if _, err = w.Write([]byte(k)); err != nil {
-		return err
+func writeHeader(w io.Writer, k string, v string) (n int64, err error) {
+	nThis, err := w.Write([]byte(k))
+	n += int64(nThis)
+	if err != nil {
+		return
 	}
-	if _, err = w.Write([]byte{':'}); err != nil {
-		return err
+	nThis, err = w.Write([]byte{':'})
+	n += int64(nThis)
+	if err != nil {
+		return
 	}
-	return writeHeaderValue(len(k)+1, w, v)
+	nThis64, err := writeHeaderValue(len(k)+1, w, v)
+	n += nThis64
+	return
 }
 
 // Write the value part of a header. `cols` is the starting offset from the
 // beginning of the line, e.g. if the header is "To", then cols will be 3
 // (two characters plus the colon).
-func writeHeaderValue(cols int, w io.Writer, v string) (err error) {
+func writeHeaderValue(cols int, w io.Writer, v string) (n int64, err error) {
 	r := strings.NewReader(v)
 	buf := &bytes.Buffer{}
 	ch, _, err := r.ReadRune()
 	for err == nil {
 		if ch == ':' || ch > '~' || (ch != '\t' && ch < ' ') {
-			return fmt.Errorf(
+			return n, fmt.Errorf(
 				"Illegal character in header value: %q",
 				ch)
 		}
@@ -64,10 +76,9 @@ func writeHeaderValue(cols int, w io.Writer, v string) (err error) {
 		ch, _, err = r.ReadRune()
 	}
 	if err != io.EOF {
-		return err
+		return
 	}
 	buf.Write([]byte("\r\n"))
 	buf.String()
-	_, err = buf.WriteTo(w)
-	return err
+	return buf.WriteTo(w)
 }

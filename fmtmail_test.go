@@ -20,12 +20,12 @@ import (
 
 func checkReadBack(Header mail.Header, body string, t *testing.T) {
 	buf := &bytes.Buffer{}
-	err := WriteMessage(buf, &mail.Message{
+	_, err := (&Message{
 		Header: Header,
 		Body:   strings.NewReader(body),
-	})
+	}).WriteTo(buf)
 	if err != nil {
-		t.Fatalf("Error from WriteMessage in checkReadBack: %q", err)
+		t.Fatalf("Error from WriteTo in checkReadBack: %q", err)
 	}
 	text := buf.String()
 	t.Logf("Written message text was: %q", text)
