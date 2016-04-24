@@ -74,6 +74,7 @@ var testMessages = []struct {
 	Body   string
 }{
 	{
+		// Really basic case
 		Header: mail.Header{
 			"To":      []string{"Alice <alice@example.com>"},
 			"Subject": []string{"Hi"},
@@ -81,6 +82,7 @@ var testMessages = []struct {
 		Body: "Hey there!",
 	},
 	{
+		// Multiple values for one header
 		Header: mail.Header{
 			"To": []string{
 				"Bob <bob@example.net>",
@@ -90,6 +92,26 @@ var testMessages = []struct {
 			"Subject": []string{"MWHAAHA!"},
 		},
 		Body: "I will destroy you!",
+	},
+	{
+		// Parentheses in the subject header. Subject isn't a "structured"
+		// header, so this should come through intact
+		Header: mail.Header{
+			"To":      []string{"Alice <alice@example.com>"},
+			"From":    []string{"Bob <bob@example.net>"},
+			"Subject": []string{"Are you (still) there?"},
+		},
+		Body: "I hope so.",
+	},
+	{
+		// Something that hits the 78-char limit in the middle of a token
+		// for a "structured" header.
+		Header: mail.Header{
+			"To": []string{
+				"Alice <alice@example.com>, Bob <bob@example.net>, Long <abcedgegewgiegowehgioehgeiohiohgewhhighehigewhgiohhi@example.org>",
+			},
+		},
+		Body: "long names!",
 	},
 }
 
