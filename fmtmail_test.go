@@ -1,5 +1,14 @@
 package fmtmail
 
+// The only "test" in this file is TestReadBack, which iterates over
+// testMessages to test with different inputs. The test does the following:
+//
+// 1. Write out message to a string
+// 2. Read it back in via net/mail.
+// 3. Verify that the messages are the same.
+//
+// The check* functions are helpers for step (3).
+
 import (
 	"bytes"
 	"io"
