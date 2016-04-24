@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/mail"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -49,7 +50,13 @@ func checkSameHeaders(hdr1, hdr2 mail.Header, t *testing.T) {
 		if len(hdr2[k]) != len(vs) {
 			t.Fatalf("Message header %q differs: %v vs %v", k, vs, hdr2[k])
 		}
-		// TODO: we ought to check the values themselves more closely.
+		sort.Strings(hdr2[k])
+		sort.Strings(vs)
+		for i := range vs {
+			if hdr2[k][i] != vs[i] {
+				t.Fatalf("Message header %q differs: %v vs %v", k, vs, hdr2[k])
+			}
+		}
 	}
 }
 
@@ -63,6 +70,17 @@ var testMessages = []struct {
 			"Subject": []string{"Hi"},
 		},
 		Body: "Hey there!",
+	},
+	{
+		Header: mail.Header{
+			"To": []string{
+				"Bob <bob@example.net>",
+				"Alice <alice@example.com>",
+			},
+			"From":    []string{"Mallory <evil@example.org>"},
+			"Subject": []string{"MWHAAHA!"},
+		},
+		Body: "I will destroy you!",
 	},
 }
 
