@@ -12,6 +12,7 @@
 //   on character boundaries.
 // * Go over RFC 5322 and make sure we're hitting all of the edge cases.
 //   Right now we're probably missing some important stuff.
+// * Investigate what we need to do to accomodate MIME.
 //
 // Released under a simple permissive license, see `COPYING`.
 package fmtmail
