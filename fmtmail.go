@@ -6,10 +6,18 @@ import (
 	"io"
 	"net/mail"
 	"strings"
+	"time"
 )
+
+const timeFormat = time.RFC822
 
 // An email message
 type Message mail.Message
+
+// Set the message's Date header to the indicated time.
+func (m *Message) SetDate(t time.Time) {
+	m.Header["Date"] = append(m.Header["Date"], t.Format(timeFormat))
+}
 
 // Write m to w. Can return an error because of:
 //
